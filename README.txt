@@ -21,7 +21,7 @@ License
 CC0: Public Domain
 
 3.
-In our reprository (https://github.com/klujber/diabetes/) you can find the following files:
+In our repository (https://github.com/klujber/diabetes/) you can find the following files:
 
 Our database:
 	-diabetes.csv
