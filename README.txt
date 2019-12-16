@@ -27,10 +27,11 @@ Our database:
 	-diabetes.csv
 Our plan with time schedule and detailled information to understand the database:
 	-M3_report.pdf
-The analysis has been made in Python in Jupyter Notebook, as well as in R.
+The analysis has been made in Python in Jupyter Notebook, as well as in R Session.
 	-the Python code: DiabatesSet.ipnyb
 	-the R code with detailled infromation: R_Session_Diabetes_markdown.pdf
 	-the R plots: PlotsR.pdf
+	-the R Session code: R_Session_Diabetes_markdown.Rmd
 The statistically significant plots are available also in high resolution:
 	-BMI.pdf
 	-DiabetesPedigreeFunction.pdf

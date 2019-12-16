@@ -1,0 +1,224 @@
+---
+title: "Pima Indian women"
+author: "Janica Wrosch, Bence Klujber"
+date: "14 Dezember 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+setwd('C:/Users/inzee/Documents/Python Scripts/Introduction to Data Science')
+
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(dplyr)
+
+data <- read_csv('Indians.csv')
+
+```
+
+## R Session Pima Indian Dataset
+
+We were using statistical analysis for the Indian Dataset to find out if there are any correlations between the Outcome of being diabetical or not and our 9 health attributes measured from every women.
+
+```{r convert_category, echo=TRUE, warning=FALSE}
+#Convert Outcome to categorical
+data$OutcomeCat[data$Outcome == 0] <- 'no'
+data$OutcomeCat[data$Outcome == 1] <- 'diabetes'
+
+
+```
+
+## Graphical Overview over the Data
+
+Following plots depict data distribution and shows scatterplots for each attribute compared to the others.
+
+```{r ggpair_plot, echo=FALSE, warning=FALSE}
+data1 <- data
+data1$Outcome <- NULL
+dob <- ggpairs(data = data1, mapping = aes(color = OutcomeCat, alpha = 0.6), upper = list(continuous = "cor", combo = wrap("box_no_facet", alpha = 1, size = 0.7),
+              discrete = wrap("facetbar", alpha = 1), na = "na"),
+              lower = list(continuous = wrap("points", alpha = 0.6, size = 0.7),
+              combo = wrap("facethist", alpha = 1), discrete = wrap("facetbar", alpha = 1), na = "na"))+
+              theme_minimal()
+for(i in 1:dob$nrow) {
+  for(j in 1:dob$ncol){
+    dob[i,j] <- dob[i,j] + 
+      scale_fill_manual(values=c("#B6E213", "#222A35"))+
+    scale_color_manual(values=c("#B6E213", "#222A35"))  
+    
+  }
+}
+
+dob
+```
+
+## Interesting Plots
+
+Following are the most interesting, more readable plots that give insights in the data.
+
+```{r insulin_relation, echo=TRUE, warning=FALSE}
+
+#boxplots
+
+ggplot(data, aes(x = OutcomeCat, y = Insulin))+
+  geom_boxplot(aes(fill = OutcomeCat))+
+  scale_fill_manual(values=c("no" = "#B6E213", "diabetes" = "#B6DCE6"))
+
+diabetes_ppl <- subset(data, Outcome == 1)
+healthy_ppl <- subset(data, Outcome == 0)
+
+var.test(x = diabetes_ppl$Insulin, y = healthy_ppl$Insulin, alternative = "two.sided")
+# shows variances are not equal
+t.test(x = diabetes_ppl$Insulin, y = healthy_ppl$Insulin, alternative = "two.sided", var.equal = F)
+# accept H0 if p-value > 0.05 - to a 95 % confidence level we assume
+# the mean Insulin level is different in the two groups!
+t.test(x = diabetes_ppl$Insulin, y = healthy_ppl$Insulin, alternative = "greater", var.equal = F)
+# accept H0 if p-value > 0.05 - to a 95 % confidence level we assume
+# the mean Insulin level is bigger in the diabetes group!
+```
+
+```{r plots}
+ggplot(data, aes(x = OutcomeCat, y = BloodPressure))+
+  geom_boxplot(aes(fill = OutcomeCat))+
+  scale_fill_manual(values=c("no" = "#B6E213", "diabetes" = "#B6DCE6"))
+
+ggplot(data, aes(x = OutcomeCat, y = SkinThickness))+
+  geom_boxplot(aes(fill = OutcomeCat))+
+  scale_fill_manual(values=c("no" = "#B6E213", "diabetes" = "#B6DCE6"))
+
+ggplot(data, aes(x = OutcomeCat, y = BMI))+
+  geom_boxplot(aes(fill = OutcomeCat))+
+  scale_fill_manual(values=c("no" = "#B6E213", "diabetes" = "#B6DCE6"))
+
+ggplot(data, aes(x = OutcomeCat, y = Pregnancies))+
+  geom_boxplot(aes(fill = OutcomeCat))+
+  scale_fill_manual(values=c("no" = "#B6E213", "diabetes" = "#B6DCE6"))
+```
+
+
+```{r glucose_relation}
+
+ggplot(data, aes(x = OutcomeCat, y = Glucose))+
+  geom_boxplot(aes(fill = OutcomeCat))+
+  scale_fill_manual(values=c("no" = "#B6E213", "diabetes" = "#B6DCE6"))
+
+var.test(x = diabetes_ppl$Glucose, y = healthy_ppl$Glucose, alternative = "two.sided")
+# shows variances are not equal
+t.test(x = diabetes_ppl$Glucose, y = healthy_ppl$Glucose, alternative = "two.sided", var.equal = F)
+# accept H0 if p-value > 0.05 - to a 95 % confidence level we assume
+# the mean glucose level is different in the two groups!
+t.test(x = diabetes_ppl$Glucose, y = healthy_ppl$Glucose, alternative = "greater", var.equal = F)
+# accept H0 if p-value < 0.05 - to a 95 % confidence level we assume
+# the mean glucose level is higher in the diabetes group!
+```
+
+
+## Linear Modelling: Finding significant relations
+
+For first statistical regression model we assume that all attributes can have a significant influence on the Outcome. So we start with all attributes in a linear model and then remove all insignificant attributes one after another
+
+```{r model_all_attributes, echo=FALSE, warning=FALSE}
+summary(lm(Outcome ~ Pregnancies+BMI+BloodPressure+SkinThickness+Glucose+Insulin+DiabetesPedigreeFunction+Age, data = data))
+
+summary(lm(Outcome ~ Pregnancies+BMI+SkinThickness+Glucose+Insulin+DiabetesPedigreeFunction+Age, data = data))
+
+summary(lm(Outcome ~ Pregnancies+BMI+SkinThickness+Glucose+DiabetesPedigreeFunction+Age, data = data))
+
+summary(lm(Outcome ~ Pregnancies+BMI+Glucose+DiabetesPedigreeFunction+Age, data = data))
+
+model1 <- lm((Outcome) ~ (Pregnancies)+(BMI)+(Glucose)+(DiabetesPedigreeFunction), data = data)
+
+```
+
+The final model we ended up, is the following:
+
+```{r}
+summary(model1)
+```
+
+The model calculates a value for the outcome. Values below 0.5 show that the women is more likely to not have diabetes (Outcome = 0), according to her health values. While values above 0.5 mostly categorize her into diabetical.
+Nevertheless, this model was not generated for prediction but more to explain significant relations within the data. So we found out that *amount of prenancies*, *BMI*, the *glucose level* and the *diabetes pedigree function* have a major influence on the outcome.
+
+Mainly one more pregnancy will increase the value of outcome by 0.02 (the outcome can have values mostly between 0 and 1).
+If the BMI increases by one point, the outcome will also increase by 0.013.
+When the glucose level increases by one point, the value of outcome will increase by 0.006.
+The pedigree function whose value describes the likeliness of having diabetes according to one's ancestors and their likeliness to have diabetes has also an influence on the outcome in our case. When it is increased by one unit, the outcome will increase by 0.14. This absolutely makes sense to us because Pima Indian women have to deal with diabetes since a long time. No one knows how it started for them that they often get diabetes but now that it is in their genes and gets passed along in every generation, the probability to get diabetes is high.
+
+```{r predictions}
+data$prediction <- predict(model1, newdata = data)
+data$pred1 <- round(data$prediction,digits = 0)
+
+ggplot(data, aes(x = Pregnancies, y = prediction))+
+  geom_point(aes(color = OutcomeCat), size = 2, alpha = 0.8)+
+  scale_color_manual(values = c("no"="#B6E213", "diabetes"="#222A35"))+
+  geom_smooth(method = "lm", color = "red")+
+  scale_x_continuous(name = "Pregnancies")+
+  scale_y_continuous(name = "Prediction")+
+  theme_minimal()
+
+ggplot(data, aes(x = Glucose, y = prediction))+
+  geom_point(aes(color = OutcomeCat), size = 2, alpha = 0.8)+
+  scale_color_manual(values = c("no"="#B6E213", "diabetes"="#222A35"))+
+  geom_smooth(method = "lm", color = "red")+
+  scale_x_continuous(name = "Glucose")+
+  scale_y_continuous(name = "Prediction")+
+  theme_minimal()
+
+ggplot(data, aes(x = BloodPressure, y = prediction))+
+  geom_point(aes(color = OutcomeCat), size = 2, alpha = 0.8)+
+  scale_color_manual(values = c("no"="#B6E213", "diabetes"="#222A35"))+
+  geom_smooth(method = "lm", color = "red")+
+  scale_x_continuous(name = "Blood Pressure")+
+  scale_y_continuous(name = "Prediction")+
+  theme_minimal()
+
+ggplot(data, aes(x = Insulin, y = prediction))+
+  geom_point(aes(color = OutcomeCat), size = 2, alpha = 0.8)+
+  scale_color_manual(values = c("no"="#B6E213", "diabetes"="#222A35"))+
+  geom_smooth(method = "lm", color = "red")+
+  scale_x_continuous(name = "Insulin")+
+  scale_y_continuous(name = "Prediction")+
+  theme_minimal()
+```
+
+```{r model_goodness}
+TP <- data %>%
+  filter(Outcome == 1, pred1 == 1, !is.na(pred1))%>%
+  summarize(summe = length(Outcome))
+
+TN <- data %>%
+  filter(Outcome == 0, pred1 == 0, !is.na(pred1))%>%
+  summarize(summe = length(Outcome))
+
+FP <- data%>%
+  filter(Outcome == 0, pred1 == 1, !is.na(pred1))%>%
+  summarize(summe = length(Outcome))
+
+FN <- data%>%
+  filter(Outcome == 1, pred1 == 0, !is.na(pred1))%>%
+  summarize(summe = length(Outcome))
+
+total <- TP+TN+FP+FN
+
+acc <- (TP+TN)/total #accuracy
+preci <- TP/(TP+FP) #precision
+recall <- TP/(TP+FN) #recall
+
+F_stat <- 2 / ((1/preci)+(1/recall))
+
+"Accuracy"
+acc
+"Precision"
+preci
+"Recall"
+recall
+"F statistic"
+F_stat
+```
+
