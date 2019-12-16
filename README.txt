@@ -28,7 +28,8 @@ Our database:
 Our plan with time schedule and detailled information to understand the database:
 	-M3_report.pdf
 The analysis has been made in Python in Jupyter Notebook, as well as in R Session.
-	-the Python code: DiabatesSet.ipnyb
+	-the Jupyter code: DiabatesSet.ipnyb
+	-the Jupyter code in html: DiabatesSet.html
 	-the R code with detailled infromation: R_Session_Diabetes_markdown.pdf
 	-the R plots: PlotsR.pdf
 	-the R Session code: R_Session_Diabetes_markdown.Rmd
